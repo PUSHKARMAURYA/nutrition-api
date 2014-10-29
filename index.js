@@ -20,8 +20,8 @@ app.get('/v1/food/:food', function(req, res) {
             req.headers.host +
             req.originalUrl;
   var response = {
-    total_foods: null,
     self: url,
+    total_foods: null,
     foods: []
   };
 
