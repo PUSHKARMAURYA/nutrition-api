@@ -1,6 +1,7 @@
 var app = require('express')();
 var Mongo = require('mongodb');
 var config = require(__dirname + '/config/config.js');
+var jade = require('jade');
 
 var mongoClient = new Mongo.MongoClient(
   new Mongo.Server(config.db.host, config.db.port)
@@ -15,7 +16,8 @@ mongoClient.open(function(err, mongoClient) {
   }
 });
 
-app.get('/v1/food/:food', function(req, res) {
+app.set('trust proxy');
+app.get('/v1/food', function(req, res) {
   var url = req.protocol + '://' +
             req.headers.host +
             req.originalUrl;
@@ -25,34 +27,56 @@ app.get('/v1/food/:food', function(req, res) {
     foods: []
   };
 
-  var food;
-  if (req.query.type === 'all') {
-    food = req.params.food;
-  } else {
-    food = '^' + req.params.food;
+  if (req.query.name === undefined) {
+    res.redirect('/oops');
   }
+  else {
+    var terms = [];
+    var singleWord = (req.query.name.match(':') === null);
+    var matchStart = (req.query.match_start === 'true');
 
-  db.collection('data')
-    .find({name: new RegExp(food)}, {_id: false})
-    .toArray(function(err, data) {
-      response.total_foods = data.length;
-      data.forEach(function(food) {
-        response.foods.push(food);
+    if (singleWord && matchStart) {
+      terms.push({name: new RegExp('^' + req.query.name)});
+    } else {
+        req.query.name.split(':').forEach(function(term) {
+        terms.push({name: new RegExp(term)});
       });
-      res
-        .set({'Content-Type': 'application/json'})
-        .status(200)
-        .send(JSON.stringify(response));
-    });
-});
+    }
 
-//app.get('/v1/id/:id
+    db.collection('data')
+      .find({$and: terms}, {_id: false})
+      .toArray(function(err, data) {
+        response.total_foods = data.length;
+        data.forEach(function(food) {
+          response.foods.push(food);
+        });
+        res
+          .set({'Content-Type': 'application/json'})
+          .status(200)
+          .send(JSON.stringify(response));
+      });
+
+    db.collection('requests').insert(
+      {
+        timestamp: new Date(),
+        ip: req.ip,
+        request: response.self
+      },
+      function(err, data) {
+        if (err) {
+          console.error(err);
+        }
+      });
+  }
+});
 
 app.get('*', function(req, res) {
   res
     .status(404)
-    // render link to github readme
-    .send('No no no.')
+    .send(jade.renderFile(
+      __dirname + '/views/usage.jade',
+      {url: req.protocol + '://' + req.headers.host}
+    ))
     .end();
 });
 
