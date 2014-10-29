@@ -20,8 +20,9 @@ app.get('/v1/food/:food', function(req, res) {
             req.headers.host +
             req.originalUrl;
   var response = {
+    total_foods: null,
     self: url,
-    results: []
+    foods: []
   };
 
   var food;
@@ -34,8 +35,9 @@ app.get('/v1/food/:food', function(req, res) {
   db.collection('data')
     .find({name: new RegExp(food)}, {_id: false})
     .toArray(function(err, data) {
+      response.total_foods = data.length;
       data.forEach(function(food) {
-        response.results.push(food);
+        response.foods.push(food);
       });
       res
         .set({'Content-Type': 'application/json'})
