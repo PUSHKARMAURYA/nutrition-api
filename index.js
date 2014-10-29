@@ -18,27 +18,38 @@ mongoClient.open(function(err, mongoClient) {
 app.get('/v1/food/:food', function(req, res) {
   var url = req.protocol + '://' +
             req.headers.host +
-            req.originalUrl
+            req.originalUrl;
   var response = {
     self: url,
     results: []
   };
+
+  var food;
+  if (req.query.type === 'all') {
+    food = req.params.food;
+  } else {
+    food = '^' + req.params.food;
+  }
+
   db.collection('data')
-    .find({name: new RegExp('^' + req.params.food)})
+    .find({name: new RegExp(food)}, {_id: false})
     .toArray(function(err, data) {
       data.forEach(function(food) {
-        delete food._id;
         response.results.push(food);
       });
       res
         .set({'Content-Type': 'application/json'})
+        .status(200)
         .send(JSON.stringify(response));
     });
 });
 
+//app.get('/v1/id/:id
+
 app.get('*', function(req, res) {
   res
-    .status(400)
+    .status(404)
+    // render link to github readme
     .send('No no no.')
     .end();
 });
