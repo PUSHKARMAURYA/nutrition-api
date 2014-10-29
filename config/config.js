@@ -1,11 +1,11 @@
 module.exports = {
   app: {
-    port: 8080,
-    ip: 'localhost'
+    port: process.env.OPENSHIFT_NODEJS_PORT || 8080,
+    ip: process.env.OPENSHIFT_NODEJS_IP || 'localhost'
   },
   db: {
-    port: 27017,
-    host: 'localhost',
+    port: process.env.OPENSHIFT_MONGODB_DB_PORT || 27017,
+    host: process.env.OPENSHIFT_MONGODB_DB_HOST || 'localhost',
     name: 'nutrition'
   }
 };
