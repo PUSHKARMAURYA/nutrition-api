@@ -1,3 +1,6 @@
-The OpenShift `nodejs` cartridge documentation can be found at:
+Nutritional composition API
+===========================
 
-http://openshift.github.io/documentation/oo_cartridge_guide.html#nodejs
+use:
+
+GET http://nutrition-grasslane.rhcloud.com/v1/food/name_of_food
