@@ -2,6 +2,7 @@ var app = require('express')();
 var Mongo = require('mongodb');
 var config = require(__dirname + '/config/config.js');
 var jade = require('jade');
+var dns = require('dns');
 
 var mongoClient = new Mongo.MongoClient(
   new Mongo.Server(config.db.host, config.db.port)
@@ -16,7 +17,7 @@ mongoClient.open(function(err, mongoClient) {
   }
 });
 
-app.set('trust proxy');
+app.enable('trust proxy');
 app.get('/v1/food', function(req, res) {
   var url = req.protocol + '://' +
             req.headers.host +
@@ -44,7 +45,7 @@ app.get('/v1/food', function(req, res) {
     }
 
     db.collection('data')
-      .find({$and: terms}, {_id: false})
+      .find({$and: terms}, {_id: false, sugar: false})
       .toArray(function(err, data) {
         response.total_foods = data.length;
         data.forEach(function(food) {
@@ -56,17 +57,21 @@ app.get('/v1/food', function(req, res) {
           .send(JSON.stringify(response));
       });
 
-    db.collection('requests').insert(
-      {
-        timestamp: new Date(),
-        ip: req.ip,
-        request: response.self
-      },
-      function(err, data) {
-        if (err) {
-          console.error(err);
-        }
-      });
+    dns.reverse(req.ip, function(err, data) {
+        db.collection('requests').insert(
+          {
+            timestamp: new Date(),
+            ip: req.ip,
+            reverseDNS: data[0],
+            request: response.self
+          },
+          function(err, data) {
+            if (err) {
+              console.error(err);
+            }
+          }
+        );
+    });
   }
 });
 
