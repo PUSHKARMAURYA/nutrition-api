@@ -18,7 +18,7 @@ mongoClient.open(function(err, mongoClient) {
 });
 
 app.enable('trust proxy');
-app.get('/v1/food', function(req, res) {
+app.get('/food', function(req, res) {
   var url = req.protocol + '://' +
             req.headers.host +
             req.originalUrl;
@@ -28,11 +28,8 @@ app.get('/v1/food', function(req, res) {
     foods: []
   };
 
-  if (req.query.name === undefined) {
-    res.redirect('/oops');
-  }
-  else {
-    var terms = [];
+  var terms = [];
+  if (req.query.name !== undefined) {
     var singleWord = (req.query.name.match(':') === null);
     var matchStart = (req.query.match_start === 'true');
 
@@ -43,36 +40,38 @@ app.get('/v1/food', function(req, res) {
         terms.push({name: new RegExp(term)});
       });
     }
-
-    db.collection('data')
-      .find({$and: terms}, {_id: false, sugar: false})
-      .toArray(function(err, data) {
-        response.total_foods = data.length;
-        data.forEach(function(food) {
-          response.foods.push(food);
-        });
-        res
-          .set({'Content-Type': 'application/json'})
-          .status(200)
-          .send(JSON.stringify(response));
-      });
-
-    dns.reverse(req.ip, function(err, data) {
-        db.collection('requests').insert(
-          {
-            timestamp: new Date(),
-            ip: req.ip,
-            reverseDNS: data[0],
-            request: response.self
-          },
-          function(err, data) {
-            if (err) {
-              console.error(err);
-            }
-          }
-        );
-    });
+  } else {
+    terms.push({});
   }
+
+  db.collection('data')
+    .find({$and: terms}, {_id: false, sugar: false})
+    .toArray(function(err, data) {
+      response.total_foods = data.length;
+      data.forEach(function(food) {
+        response.foods.push(food);
+      });
+      res
+        .set({'Content-Type': 'application/json'})
+        .status(200)
+        .send(JSON.stringify(response));
+    });
+
+  dns.reverse(req.ip, function(err, data) {
+      db.collection('requests').insert(
+        {
+          timestamp: new Date(),
+          ip: req.ip,
+          reverseDNS: data[0],
+          request: response.self
+        },
+        function(err, data) {
+          if (err) {
+            console.error(err);
+          }
+        }
+      );
+  });
 });
 
 app.get('*', function(req, res) {
