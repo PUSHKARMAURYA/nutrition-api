@@ -45,7 +45,7 @@ app.get('/food', function(req, res) {
       };
     } else {
       query.$and = [];
-      req.query.name.split(':').forEach(function(word) {
+      req.query.name.split('-').forEach(function(word) {
         query.$and.push({name: {$regex: word}});
       });
     }
