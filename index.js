@@ -19,6 +19,7 @@ mongoClient.open(function(err, mongoClient) {
 
 app.enable('trust proxy');
 app.get('/food', function(req, res) {
+  res.set({'Content-Type': 'application/json'})
   var url = req.protocol + '://' +
             req.headers.host +
             req.originalUrl;
@@ -28,34 +29,48 @@ app.get('/food', function(req, res) {
     foods: []
   };
 
-  var terms = [];
+  var query = {};
   if (req.query.name !== undefined) {
     var singleWord = (req.query.name.match(':') === null);
     var matchStart = (req.query.match_start === 'true');
 
-    if (singleWord && matchStart) {
-      terms.push({name: new RegExp('^' + req.query.name)});
+    if (req.query.name.length < 3) {
+      response.error = 'Searches must be 3 characters or greater.';
+      res
+        .status(400)
+        .send(JSON.stringify(response));
+    } else if (singleWord && matchStart) {
+      query.name = {
+        $regex: '^' + req.query.name,
+      };
     } else {
-        req.query.name.split(':').forEach(function(term) {
-        terms.push({name: new RegExp(term)});
+      query.$and = [];
+      req.query.name.split(':').forEach(function(word) {
+        query.$and.push({name: {$regex: word}});
       });
     }
   } else {
-    terms.push({});
+    // ALL RESULTS RETURNED
   }
 
-  db.collection('data')
-    .find({$and: terms}, {_id: false, sugar: false})
-    .toArray(function(err, data) {
-      response.total_foods = data.length;
-      data.forEach(function(food) {
-        response.foods.push(food);
+  if (!res.headersSent) {
+    var fields = {_id: false};
+    var options = {limit: req.query.pagination, skip: 0};
+    // make cursor here
+    db.collection('food')
+      .find(query, fields)
+      // use .each -- why build array then iterate it?
+      .toArray(function(err, data) {
+        if (err) throw err;
+        response.total_foods = data.length;
+        data.forEach(function(food) {
+          response.foods.push(food);
+        });
+        res
+          .status(200)
+          .send(JSON.stringify(response));
       });
-      res
-        .set({'Content-Type': 'application/json'})
-        .status(200)
-        .send(JSON.stringify(response));
-    });
+  }
 
   dns.reverse(req.ip, function(err, data) {
       db.collection('requests').insert(
