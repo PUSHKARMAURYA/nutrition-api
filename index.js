@@ -80,6 +80,8 @@ app.get('/food', function(req, res) {
 
         if (req.query.page) {
           response.links.self = url;
+        } else if (totalPages === 0) {
+          response.links.self = url;
         } else {
           response.links.self = url + '&page=' + pageNum;
         }
