@@ -18,6 +18,10 @@ mongoClient.open(function(err, mongoClient) {
 });
 
 app.enable('trust proxy');
+app.all('/food', function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+});
 app.get('/food', function(req, res) {
   res.set({'Content-Type': 'application/json'})
   var url = req.protocol + '://' +
@@ -64,7 +68,7 @@ app.get('/food', function(req, res) {
     };
 
     /* pagination limit */
-    var limit = 10;
+    var limit = 30;
     var pageNum = req.query.page || 1;
     var stop = limit*pageNum;
     var start = limit*(pageNum-1);
