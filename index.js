@@ -18,11 +18,11 @@ mongoClient.open(function(err, mongoClient) {
 });
 
 app.enable('trust proxy');
-app.all('/food', function(req, res, next) {
+app.all('/nutrition/food', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   next();
 });
-app.get('/food', function(req, res) {
+app.get('/nutrition/food', function(req, res) {
   res.set({'Content-Type': 'application/json'})
   var url = req.protocol + '://' +
             req.headers.host +
