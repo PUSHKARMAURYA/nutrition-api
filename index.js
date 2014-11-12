@@ -50,11 +50,17 @@ app.get('/nutrition/food', function(req, res) {
     } else if (singleWord && matchStart) {
       query.name = {
         $regex: '^' + req.query.name,
+        $options: 'i',
       };
     } else {
       query.$and = [];
       req.query.name.split('-').forEach(function(word) {
-        query.$and.push({name: {$regex: word}});
+        query.$and.push({
+          name: {
+            $regex: word,
+            $options: 'i',
+          }
+        });
       });
     }
   } else {
