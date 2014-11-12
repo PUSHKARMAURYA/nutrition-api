@@ -59,7 +59,7 @@ app.get('/nutrition/food', function(req, res) {
     }
   } else {
     // ALL RESULTS RETURNED
-    var msg = "No food defined."
+    var msg = 'No food defined. Visit https://github.com/damonmcminn/nutrition-api for instructions on use';
     res.set({'Content-Type': 'application/json'});
     res.status(404).send(JSON.stringify(msg)).end();
   }
