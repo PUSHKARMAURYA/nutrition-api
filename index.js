@@ -128,6 +128,7 @@ app.get('/food', function(req, res) {
 
 app.get('*', function(req, res) {
   var msg = 'Bad request. Visit https://github.com/damonmcminn/nutrition-api for instructions on use';
+  res.set({'Content-Type': 'application/json'});
   res.status(404).send(JSON.stringify(msg)).end();
 });
 
