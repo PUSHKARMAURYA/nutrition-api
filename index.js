@@ -24,7 +24,9 @@ app.all('/nutrition/food', function(req, res, next) {
 });
 app.get('/nutrition/food', function(req, res) {
   res.set({'Content-Type': 'application/json'})
-  var url = req.protocol + '://' +
+  var protocol = (req.headers.host.search(/localhost/) < 0) ?
+    'https' : req.protocol;
+  var url = protocol + '://' +
             req.headers.host +
             req.originalUrl;
   var baseUrl = url.slice(0, url.indexOf('?') + 1);
