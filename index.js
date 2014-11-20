@@ -126,7 +126,7 @@ app.get('/nutrition/food', function(req, res) {
           timestamp: new Date(),
           ip: req.ip,
           reverseDNS: data[0],
-          request: response.links.self
+          request: req.url
         },
         function(err, data) {
           if (err) {
