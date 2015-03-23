@@ -86,6 +86,7 @@ app.get('/nutrition/food', function(req, res) {
 
     db.collection('food')
       .find(query, projection)
+      .sort({name: 1})
       // use .each -- why build array then iterate it?
       .toArray(function(err, data) {
         if (err) throw err;
