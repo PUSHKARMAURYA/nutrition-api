@@ -30,11 +30,17 @@ function buildQuery(words) {
 }
 
 
+function integerOrDefault(num, default) {
+  // MongoDB skip/limit are ignored (all docs) if arg is not Number
+  return Number.isInteger(num) ? num : default;
+}
+
+
 function findFood(search, callback) {
   // {words: Array, skip: Number, limit: Number}
   var query = buildQuery(search.words);
-  var skip = search.skip || 0;
-  var limit = search.limit || 1;
+  var skip = integerOrDefault(search.skip, 0);
+  var limit = integerOrDefault(search.limit, 1);
   var projection = {
     _id: false,
     ndb_id: false
