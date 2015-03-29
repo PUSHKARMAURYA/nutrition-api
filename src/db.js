@@ -1,4 +1,5 @@
 var m = require('mongodb');
+var logger = require('./logger');
 var host = process.env.NUTRITION_MONGO_HOST || 'localhost';
 var port = process.env.NUTRITION_MONGO_PORT || 27017;
 var nutritionDb = process.env.NUTRITION_DATABASE || 'nutrition';
@@ -6,11 +7,12 @@ var nutritionDb = process.env.NUTRITION_DATABASE || 'nutrition';
 var mongoServer = new m.Server(host, port);
 var client = new m.MongoClient(mongoServer);
 var db = client.db(nutritionDb);
+
 client.open(function(err, conn) {
   if (err) {
-    console.err(err);
+    logger.error(err);
   } else {
-    console.log(conn);
+    logger.info(conn);
   }
 });
 
