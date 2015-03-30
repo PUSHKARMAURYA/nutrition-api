@@ -14,8 +14,6 @@ var db = client.db(nutritionDb);
 client.open(function(err, conn) {
   if (err) {
     logger.error(err);
-  } else {
-    logger.info(conn);
   }
 });
 
