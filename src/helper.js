@@ -14,12 +14,15 @@ function largest(a, b) {
 }
 
 function buildResponse(data, req) {
+  // custom header set by api-proxy: https://github.com/damonmcminn/api-proxy
+  var prefix = req.headers['api-proxy-prefix'];
   var page = Number(req.query.page) || 1;
   var totalFoods = data.total;
   var totalPages = Math.ceil(totalFoods/data.limit);
 
   var host = req.headers.host;
-  var path = req._parsedUrl.pathname;
+  var pathName = req._parsedUrl.pathname;
+  var path = prefix ? `/${prefix}${pathName}` : pathName;
   var url = `${req.protocol}://${host}${path}`;
 
   return {
