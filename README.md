@@ -7,7 +7,7 @@ Currently has a single source: USDA SR27.
 ###Plans
 * Include other sources e.g. CoFIDS
 * Search by macronutrient/kcal value and range of values
-* API authenticaion for editing names, add tags, adding new foods
+* API authentication for editing names, adding tags, adding new foods
 
 ####Single Word
 GET `https://api.damonmcminn.com/nutrition/pinyon`
