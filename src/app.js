@@ -15,6 +15,8 @@ app.get('/:food', function(req, res, next) {
     page: Number(req.query.page)
   };
 
+  db.logRequest({ip: req.ip, search: req.url});
+
   db.findFood(search, function(err, data) {
     res.json(buildResponse(data, req));
   });
