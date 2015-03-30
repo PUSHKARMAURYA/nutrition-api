@@ -2,6 +2,10 @@
 
 var app = require('express')();
 var db = require('./db');
+var helper = require('./helper');
+var wordLength = helper.wordLength;
+var largest = helper.largest;
+var buildResponse = helper.buildResponse;
 
 module.exports = app;
 
@@ -15,48 +19,16 @@ app.get('/:food', function(req, res, next) {
     page: Number(req.query.page)
   };
 
+  var longestWordLength = words.map(wordLength).reduce(largest);
+  var minLength = 3;
+  var tooShort = `Searches must be minimum of ${minLength} characters`;
+  if (longestWordLength < minLength) {
+    return res.status(400).json({message: tooShort});
+  }
+
   db.logRequest({ip: req.ip, search: req.url});
 
   db.findFood(search, function(err, data) {
     res.json(buildResponse(data, req));
   });
 });
-
-function buildResponse(data, req) {
-  var page = Number(req.query.page) || 1;
-  var totalFoods = data.total;
-  var totalPages = Math.ceil(totalFoods/data.limit);
-
-  var host = req.headers.host;
-  var path = req._parsedUrl.pathname;
-  var url = `${req.protocol}://${host}${path}`;
-
-  return {
-    links: generateLinks(url, page, totalPages),
-    total_foods: totalFoods,
-    total_pages: totalPages,
-    foods: data.results
-  };
-}
-
-function generateLinks(url, page, total) {
-  var base = url + '?page=';
-  var isValid = page <= total;
-  var isNext = page < total;
-  var isPrev = (page > 1) && (page <= total);
-
-  var links = {};
-  var urls = [
-    {name: 'self', url: isValid ? (base + page) : false},
-    {name: 'next', url: isNext ? (base + (page + 1)) : false},
-    {name: 'prev', url: isPrev ? (base + (page - 1)) : false}
-    ]
-    .filter(function(link) {
-      return link.url;
-    })
-    .forEach(function(link) {
-      links[link.name] = link.url;
-    });
-
-  return links;
-}
