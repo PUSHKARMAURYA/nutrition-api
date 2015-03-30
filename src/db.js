@@ -1,4 +1,7 @@
+'use strict';
+
 var m = require('mongodb');
+var async = require('async');
 var logger = require('./logger');
 var host = process.env.NUTRITION_MONGO_HOST || 'localhost';
 var port = process.env.NUTRITION_MONGO_PORT || 27017;
@@ -32,17 +35,11 @@ function buildQuery(words) {
 }
 
 
-function integerOrDefault(num, default) {
-  // MongoDB skip/limit are ignored (all docs) if arg is not Number
-  return Number.isInteger(num) ? num : default;
-}
-
-
 function findFood(search, callback) {
-  // {words: Array, skip: Number, limit: Number}
+  // search === {words: Array, page: Number}
   var query = buildQuery(search.words);
-  var skip = integerOrDefault(search.skip, 0);
-  var limit = integerOrDefault(search.limit, 1);
+  var page = search.page || 1;
+  var limit = 30;
   var projection = {
     _id: false,
     ndb_id: false
@@ -52,14 +49,37 @@ function findFood(search, callback) {
     query['source.organisation'] = search.source;
   }
   
-  db.collection('food')
-    .find(query, projection)
-    .sort({name: 1})
-    .skip(skip)
-    .limit(limit)
-    .toArray(function(err, docs) {
-      callback(err, docs);
-    });
+  async.waterfall([
+    function(cb) {
+      // cb -> err, Number
+      db.collection('food')
+        .find(query)
+        .count(cb);
+    },
+    function(total, cb) {
+      // cb -> null, Number
+      var skip = (page > 1) ? (page - 1) * limit : 0;
+      cb(null, skip, total);
+    },
+    function(skip, total, cb) {
+      db.collection('food')
+        .find(query, projection)
+        .sort({name: 1})
+        .skip(skip)
+        .limit(limit)
+        .toArray(function(err, docs) {
+          var data = {
+            results: docs,
+            total: total,
+            page: page,
+            limit: limit
+          };
+          cb(err, data);
+        });
+    }
+  ], function(err, data) {
+    callback(err, data);
+  });
 }
 
 function logRequest(log, callback) {
