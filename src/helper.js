@@ -18,13 +18,19 @@ function largest(a, b) {
 function buildResponse(data, req) {
   // custom header set by api-proxy: https://github.com/damonmcminn/api-proxy
   var prefix = req.headers['api-proxy-prefix'];
-  var page = Number(req.query.page) || 1;
+  var page = Number(req.query.page);
   var totalFoods = data.total;
   var totalPages = Math.ceil(totalFoods/data.limit);
   
   var host = req.headers.host;
-  var href = req._parsedUrl.href
-  var path = prefix ? `/${prefix}${href}` : href;
+  var pathName = req._parsedUrl.pathname;
+  var search = req.query.search;
+  var words = Array.isArray(search) ? search : [(search || '')];
+  var q = words.map(function(word) {
+    return `search=${word}`;
+  }).join('&');
+
+  var path = prefix ? `/${prefix}${pathName}?${q}` : `${pathName}?${q}`;
   var url = `${req.protocol}://${host}${path}`;
 
   return {
@@ -38,13 +44,21 @@ function buildResponse(data, req) {
 // PRIVATE
 function generateLinks(url, page, total) {
   var base = url + '&page=';
+  var noPage = (page === 0 || Number.isNaN(page));
+
+  var self = (noPage) ? url : (base + page);
+
+  if (noPage) {
+    page = 1;
+  }
+
   var isValid = page <= total;
   var isNext = page < total;
   var isPrev = (page > 1) && (page <= total);
 
   var links = {};
   var urls = [
-    {name: 'self', url: isValid ? (base + page) : false},
+    {name: 'self', url: isValid ? self : false},
     {name: 'next', url: isNext ? (base + (page + 1)) : false},
     {name: 'prev', url: isPrev ? (base + (page - 1)) : false}
     ]
@@ -57,4 +71,3 @@ function generateLinks(url, page, total) {
 
   return links;
 }
-

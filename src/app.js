@@ -24,8 +24,11 @@ app.get('/food', function(req, res, next) {
   var longestWordLength = words.map(wordLength).reduce(largest);
   var minLength = 3;
   var tooShort = `Searches must be minimum of ${minLength} characters`;
+  var badPageNumber = `${req.query.page} is not a page number`;
   if (longestWordLength < minLength) {
     return res.status(400).json({message: tooShort});
+  } else if (req.query.page && ((query.page < 1) || Number.isNaN(query.page))) {
+    return res.status(400).json({message: badPageNumber});
   }
 
   db.logRequest({ip: req.ip, search: req.url});
