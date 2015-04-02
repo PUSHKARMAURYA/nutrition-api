@@ -1,3 +1,4 @@
+var qs = require('querystring');
 module.exports = Helper;
 
 function Helper() {}
@@ -26,9 +27,7 @@ function buildResponse(data, req) {
   var pathName = req._parsedUrl.pathname;
   var search = req.query.search;
   var words = Array.isArray(search) ? search : [(search || '')];
-  var q = words.map(function(word) {
-    return `search=${word}`;
-  }).join('&');
+  var q = qs.stringify({search: words});
 
   var path = prefix ? `/${prefix}${pathName}?${q}` : `${pathName}?${q}`;
   var url = `${req.protocol}://${host}${path}`;
