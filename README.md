@@ -10,12 +10,12 @@ Currently has a single source: USDA SR27.
 * API authentication for editing names, adding tags, adding new foods
 
 ####Single Word
-GET `https://api.damonmcminn.com/nutrition/pinyon`
+GET `https://api.damonmcminn.com/nutrition/food?search=pinyon`
 
 ```javascript
 {
   "links": {
-    "self": "https://api.damonmcminn.com/nutrition/pinyon?page=1"
+    "self": "https://api.damonmcminn.com/nutrition/food?search=pinyon"
   },
   "total_foods": 1,
   "total_pages": 1,
@@ -40,12 +40,12 @@ GET `https://api.damonmcminn.com/nutrition/pinyon`
 ```
 
 ####Multiple words separated by hyphens
-GET `https://api.damonmcminn.com/nutrition/turtle-green-raw`
+GET `https://api.damonmcminn.com/nutrition/food?search=turtle-green-raw`
 
 ```javascript
 {
   "links": {
-    "self": "https://api.damonmcminn.com/nutrition/green-turtle-raw?page=1"
+    "self": "https://api.damonmcminn.com/nutrition/food?search=green-turtle-raw"
   },
   "total_foods": 1,
   "total_pages": 1,
