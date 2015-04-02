@@ -18,7 +18,7 @@ app.get('/food', function(req, res, next) {
   var words = Array.isArray(search) ? search : [(search || '')];
   var query = {
     words: words,
-    page: Number(req.query.page)
+    page: Number(req.query.page) || 0
   };
 
   var longestWordLength = words.map(wordLength).reduce(largest);
@@ -27,7 +27,7 @@ app.get('/food', function(req, res, next) {
   var badPageNumber = `${req.query.page} is not a page number`;
   if (longestWordLength < minLength) {
     return res.status(400).json({message: tooShort});
-  } else if (req.query.page && ((query.page < 1) || Number.isNaN(query.page))) {
+  } else if (req.query.page && (query.page < 1)) {
     return res.status(400).json({message: badPageNumber});
   }
 
