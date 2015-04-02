@@ -13,8 +13,10 @@ app.enable('trust proxy');
 
 app.get('/food', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
-  var words = (req.query.words).split('-');
-  var search = {
+  var search = req.query.search;
+  // search could be ['foo', 'bar'], 'foo', undefined
+  var words = Array.isArray(search) ? search : [(search || '')];
+  var query = {
     words: words,
     page: Number(req.query.page)
   };
@@ -28,7 +30,7 @@ app.get('/food', function(req, res, next) {
 
   db.logRequest({ip: req.ip, search: req.url});
 
-  db.findFood(search, function(err, data) {
+  db.findFood(query, function(err, data) {
     res.json(buildResponse(data, req));
   });
 });
