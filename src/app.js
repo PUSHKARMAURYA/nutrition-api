@@ -11,9 +11,9 @@ module.exports = app;
 
 app.enable('trust proxy');
 
-app.get('/:food', function(req, res, next) {
+app.get('/food', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
-  var words = (req.params.food).split('-');
+  var words = (req.query.words).split('-');
   var search = {
     words: words,
     page: Number(req.query.page)
