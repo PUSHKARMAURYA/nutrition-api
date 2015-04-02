@@ -1,8 +1,10 @@
-module.exports = {
-  wordLength: wordLength,
-  largest: largest,
-  buildResponse: buildResponse
-}
+module.exports = Helper;
+
+function Helper() {}
+
+Helper.wordLength = wordLength;
+Helper.largest = largest;
+Helper.buildResponse = buildResponse;
 
 // EXPORTS
 function wordLength(word) {
@@ -19,10 +21,10 @@ function buildResponse(data, req) {
   var page = Number(req.query.page) || 1;
   var totalFoods = data.total;
   var totalPages = Math.ceil(totalFoods/data.limit);
-
+  
   var host = req.headers.host;
-  var pathName = req._parsedUrl.pathname;
-  var path = prefix ? `/${prefix}${pathName}` : pathName;
+  var href = req._parsedUrl.href
+  var path = prefix ? `/${prefix}${href}` : href;
   var url = `${req.protocol}://${host}${path}`;
 
   return {
@@ -35,7 +37,7 @@ function buildResponse(data, req) {
 
 // PRIVATE
 function generateLinks(url, page, total) {
-  var base = url + '?page=';
+  var base = url + '&page=';
   var isValid = page <= total;
   var isNext = page < total;
   var isPrev = (page > 1) && (page <= total);
@@ -55,3 +57,4 @@ function generateLinks(url, page, total) {
 
   return links;
 }
+
