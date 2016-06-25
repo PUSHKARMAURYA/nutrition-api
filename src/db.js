@@ -3,20 +3,16 @@
 var m = require('mongodb');
 var async = require('async');
 var logger = require('./logger');
-var host = process.env.NUTRITION_MONGO_HOST || 'localhost';
-var port = process.env.NUTRITION_MONGO_PORT || 27017;
-var nutritionDb = process.env.NUTRITION_DATABASE || 'nutrition';
 
-var mongoServer = new m.Server(host, port);
-var client = new m.MongoClient(mongoServer);
-var db = client.db(nutritionDb);
+var db;
 
-client.open(function(err, conn) {
+m.MongoClient.connect(process.env.MONGO_URL, function(err, database) {
   if (err) {
     logger.error(err);
   }
-});
 
+  db = database;
+});
 
 function buildQuery(words) {
   // words is an array
